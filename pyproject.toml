@@ -6,6 +6,10 @@ authors = ["bartosz121 <bmagiera121@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+textual = "^0.1.13"
+pydub = "^0.25.1"
+simpleaudio = "^1.0.4"
+eyed3 = "^0.9.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
