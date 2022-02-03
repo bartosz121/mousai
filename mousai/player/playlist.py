@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import Iterator, List, NamedTuple, Optional
 
 import eyed3  # type: ignore
-from pydub import AudioSegment  # type: ignore
 
 # TODO ANNOTATIONS
 
 
 class AudioMetaData(NamedTuple):
     file_name: str
+    playtime: int = 0
     artist: Optional[str] = None
     album: Optional[str] = None
     title: Optional[str] = None
@@ -36,6 +36,7 @@ class AudioMetaData(NamedTuple):
 
         return cls(
             audiofile.tag.file_info.name,
+            audiofile.info.time_secs,  # type: ignore
             audiofile.tag.artist,
             audiofile.tag.album,
             audiofile.tag.title,
@@ -46,12 +47,9 @@ class AudioMetaData(NamedTuple):
 
 
 class PlaylistItem:
-    def __init__(self, path, audio, meta_data) -> None:
+    def __init__(self, path, meta_data) -> None:
         self.path: Path = path
-        self.audio: AudioSegment = audio
-        self.audio_readonly: AudioSegment = audio
-        self.duration: int = len(audio)
-        self.meta = meta_data
+        self.meta: AudioMetaData = meta_data
         self.added = datetime.utcnow()
 
     def __repr__(self) -> str:
@@ -66,12 +64,11 @@ class PlaylistItem:
     @classmethod
     def from_file(cls, path: Path) -> "PlaylistItem":
         try:
-            audio = AudioSegment.from_file(path)
             meta_data = AudioMetaData.from_file(path)
         except FileNotFoundError as e:
             raise e
 
-        return cls(path, audio, meta_data)
+        return cls(path, meta_data)
 
 
 class Playlist:
