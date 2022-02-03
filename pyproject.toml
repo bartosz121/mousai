@@ -6,11 +6,11 @@ authors = ["bartosz121 <bmagiera121@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pydub = "^0.25.1"
 simpleaudio = "^1.0.4"
 eyed3 = "^0.9.6"
 PySimpleGUI = "^4.56.0"
 Pillow = "^9.0.0"
+pygame = "^2.1.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
