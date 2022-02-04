@@ -35,7 +35,7 @@ class AudioMetaData(NamedTuple):
             art = io.BytesIO(audiofile.tag.images[0].image_data)
 
         return cls(
-            audiofile.tag.file_info.name,
+            path.name,
             audiofile.info.time_secs,  # type: ignore
             audiofile.tag.artist,
             audiofile.tag.album,
