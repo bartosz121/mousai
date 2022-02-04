@@ -6,6 +6,7 @@ from typing import List
 
 import PySimpleGUI as sg  # type: ignore
 
+import add_songs
 import utils
 from player.audio_player import AudioPlayer
 from player.playlist import PlaylistItem
@@ -26,6 +27,7 @@ class MousaiGUI:
         self._default_art_cover = utils.get_default_art_cover()
         self.theme = theme
         self.player = AudioPlayer()
+        add_songs.add_songs(self.player.playlist)
         self.gui_playtime = 0.00
         self.layout = self.create_layout()
         self.window = sg.Window("Mousai", self.layout, resizable=False, finalize=True)
@@ -33,6 +35,7 @@ class MousaiGUI:
         # Keyboard shortcuts
         self.window["-TABLE-"].bind("<Return>", "+START_KEY_PRESS+")
         self.window.bind("<space>", "+SPACE_KEY_PRESS+")
+        self.window.bind("r", "+R_KEY_PRESS+")
 
     def get_song_art(self, song_meta_art: BytesIO | None) -> bytes:
         """Returns song art cover to display in `Metadata` frame;
@@ -217,6 +220,10 @@ class MousaiGUI:
                 elif event == "-TABLE-+START_KEY_PRESS+":
                     value = values["-TABLE-"][0]
                     self.set_current_song(self.player.playlist[value])
+
+                elif event == "+R_KEY_PRESS+":
+                    if self.player.current_song:
+                        self.set_current_song(self.player.current_song)
 
         if self.player.is_playing:
             self.player.stop()
