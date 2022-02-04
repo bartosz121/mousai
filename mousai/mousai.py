@@ -4,7 +4,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import List
 
-import PySimpleGUI as sg
+import PySimpleGUI as sg  # type: ignore
 
 import utils
 from player.audio_player import AudioPlayer
@@ -131,7 +131,7 @@ class MousaiGUI:
         """Creates list of lists which contain values for playlist table in [Title, Artist, Duration] format"""
         table_data = []
         for song in self.player.playlist:
-            title = song.meta.title if song.meta.title else "-"
+            title = song.meta.title if song.meta.title else song.meta.file_name
             artist = song.meta.artist if song.meta.artist else "-"
             duration = "-"
 
@@ -144,9 +144,15 @@ class MousaiGUI:
 
     def set_metadata_frame(self) -> None:
         song = self.player.current_song
+
         if song:
+            song_title = song.meta.title
+
+            if song_title is None:
+                song_title = song.meta.file_name
+
             data = {
-                "-META_TITLE-": song.meta.title,
+                "-META_TITLE-": song_title,
                 "-META_ALBUM-": song.meta.album,
                 "-META_ARTIST-": song.meta.artist,
                 "-META_DATE-": song.meta.release_date,
