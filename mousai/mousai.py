@@ -30,7 +30,9 @@ class MousaiGUI:
         self.layout = self.create_layout()
         self.window = sg.Window("Mousai", self.layout, resizable=False, finalize=True)
 
+        # Keyboard shortcuts
         self.window["-TABLE-"].bind("<Return>", "+START_KEY_PRESS+")
+        self.window.bind("<space>", "+SPACE_KEY_PRESS+")
 
     def get_song_art(self, song_meta_art: BytesIO | None) -> bytes:
         """Returns song art cover to display in `Metadata` frame;
@@ -181,8 +183,8 @@ class MousaiGUI:
     def run(self) -> None:
         while True:
             event, values = self.window.read(timeout=WINDOW_TIMEOUT)  # type: ignore
-            # if event != "__TIMEOUT__":
-            #     print(f"{event=} {values=}")
+            if event != "__TIMEOUT__":
+                print(f"{event=} {values=}")
             # print(repr(self.player.playlist))
 
             if self.player.current_song and not self.player.playback_paused:
@@ -194,20 +196,6 @@ class MousaiGUI:
                 self.window["-PROG_BAR-"].update(
                     current_playtime, self.player.current_song.meta.playtime
                 )
-
-            if event == sg.WINDOW_CLOSED:
-                break
-
-            if event == "-PLAY_PAUSE_BTN-":
-                if self.player.playback_paused:
-                    self.player.play()
-                else:
-                    self.player.pause()
-
-            if event == "-TABLE-+START_KEY_PRESS+":
-                value = values["-TABLE-"][0]
-                self.set_current_song(self.player.playlist[value])
-
             if isinstance(event, tuple):
                 # TABLE CLICKED Event has value in format ('.TABLE', '+CLICKED+', (row,col))
                 if event[0] == "-TABLE-":
@@ -215,6 +203,20 @@ class MousaiGUI:
                     value = event[2][0]
                     if value is not None:  # can be None if user clicks on table headers
                         self.set_current_song(self.player.playlist[value])
+            else:
+                if event == sg.WINDOW_CLOSED:
+                    break
+
+                elif event == "-PLAY_PAUSE_BTN-" or event == "+SPACE_KEY_PRESS+":
+                    if self.player.current_song:
+                        if self.player.playback_paused:
+                            self.player.play()
+                        else:
+                            self.player.pause()
+
+                elif event == "-TABLE-+START_KEY_PRESS+":
+                    value = values["-TABLE-"][0]
+                    self.set_current_song(self.player.playlist[value])
 
         if self.player.is_playing:
             self.player.stop()
