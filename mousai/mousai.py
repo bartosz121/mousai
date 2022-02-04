@@ -28,7 +28,9 @@ class MousaiGUI:
         self.player = AudioPlayer()
         self.gui_playtime = 0.00
         self.layout = self.create_layout()
-        self.window = sg.Window("Mousai", self.layout, resizable=False)
+        self.window = sg.Window("Mousai", self.layout, resizable=False, finalize=True)
+
+        self.window["-TABLE-"].bind("<Return>", "+START_KEY_PRESS+")
 
     def get_song_art(self, song_meta_art: BytesIO | None) -> bytes:
         """Returns song art cover to display in `Metadata` frame;
@@ -173,6 +175,8 @@ class MousaiGUI:
     def run(self) -> None:
         while True:
             event, values = self.window.read(timeout=WINDOW_TIMEOUT)  # type: ignore
+            # if event != "__TIMEOUT__":
+            #     print(f"{event=} {values=}")
             # print(repr(self.player.playlist))
 
             if self.player.current_song and not self.player.playback_paused:
@@ -194,14 +198,17 @@ class MousaiGUI:
                 else:
                     self.player.pause()
 
+            if event == "-TABLE-+START_KEY_PRESS+":
+                value = values["-TABLE-"][0]
+                self.set_current_song(self.player.playlist[value])
+
             if isinstance(event, tuple):
                 # TABLE CLICKED Event has value in format ('.TABLE', '+CLICKED+', (row,col))
                 if event[0] == "-TABLE-":
                     print(f"{event=} {values=}")
-                    index = event[2][0]
-                    if index is not None:  # can be None if user clicks on table headers
-                        song = self.player.playlist[event[2][0]]
-                        self.set_current_song(song)
+                    value = event[2][0]
+                    if value is not None:  # can be None if user clicks on table headers
+                        self.set_current_song(self.player.playlist[value])
 
         if self.player.is_playing:
             self.player.stop()
