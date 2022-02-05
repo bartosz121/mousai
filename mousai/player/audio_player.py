@@ -12,9 +12,12 @@ class AudioPlayer:
         mixer.init()
         self.playlist = Playlist()
         self.current_song: PlaylistItem | None = None
+        self.volume = 1.0
         self._queue = deque(maxlen=10)  # TODO annotate this
         self._history = deque()
         self.playback_paused = False
+
+        mixer.music.set_volume(self.volume)
 
     def add_to_history(self, item) -> None:  # TODO annotate item
         self._history.appendleft(item)
@@ -45,6 +48,10 @@ class AudioPlayer:
 
     def get_playtime(self) -> float:
         return mixer.music.get_pos()
+
+    def set_volume(self, value: float) -> None:
+        self.volume = round(value, 2)
+        mixer.music.set_volume(self.volume)
 
     def play(self) -> None:
         if self.current_song:
