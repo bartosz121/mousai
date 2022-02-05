@@ -34,6 +34,8 @@ class MousaiGUI:
 
         # Keyboard shortcuts
         self.window["-TABLE-"].bind("<Return>", "+START_KEY_PRESS+")
+        self.window.bind("n", "+N_KEY_PRESS+")
+        self.window.bind("m", "+M_KEY_PRESS+")
         self.window.bind("<space>", "+SPACE_KEY_PRESS+")
         self.window.bind("r", "+R_KEY_PRESS+")
 
@@ -51,6 +53,9 @@ class MousaiGUI:
         self.set_metadata_frame()
         self.set_timers()
         self.player.play()
+        self.player.set_volume(
+            self.player.volume
+        )  # Because when new music is loaded the volume is reset to full volume
 
     def create_layout(self) -> List[List[sg.Pane]]:
         right_col = [
@@ -70,11 +75,9 @@ class MousaiGUI:
             ]
         ]
         controls = [
-            sg.Button("Random", disabled=True),
             sg.Button("<<", disabled=True),
             sg.Button("▶", focus=True, key="-PLAY_PAUSE_BTN-"),
             sg.Button(">>", disabled=True),
-            sg.Button("Loop", disabled=True),
         ]
 
         left_col = [
@@ -119,7 +122,28 @@ class MousaiGUI:
                 ),
                 sg.Text("-:--", key="-PLAY_DURATION-"),
             ],
-            [sg.Push(), *controls, sg.Push()],
+            [
+                sg.Button("Random", disabled=True),
+                sg.Button("Loop", disabled=True),
+                sg.Push(),
+                *controls,
+                sg.Push(),
+                sg.Text(
+                    int(self.player.volume * 100),
+                    size=3,
+                    justification="center",
+                    key="-VOLUME_TEXT-",
+                ),
+                sg.Slider(
+                    range=(0, 100),
+                    default_value=self.player.volume * 100,
+                    orientation="horizontal",
+                    size=(12, 14),
+                    enable_events=True,
+                    disable_number_display=True,
+                    key="-VOLUME_SLIDER-",
+                ),
+            ],
         ]
 
         return layout
@@ -183,12 +207,20 @@ class MousaiGUI:
         self.window["-PLAY_TIME-"].update(start)
         self.window["-PLAY_DURATION-"].update(end)
 
+    def handle_volume_change(self, value: float) -> None:
+        if value > 100:
+            value = 100
+        elif value < 0:
+            value = 0
+        self.player.set_volume(value / 100)
+        self.window["-VOLUME_TEXT-"].update(f"{value:0.0f}")
+        self.window["-VOLUME_SLIDER-"].update(value)
+
     def run(self) -> None:
         while True:
             event, values = self.window.read(timeout=WINDOW_TIMEOUT)  # type: ignore
             if event != "__TIMEOUT__":
                 print(f"{event=} {values=}")
-            # print(repr(self.player.playlist))
 
             if self.player.current_song and not self.player.playback_paused:
                 current_playtime = round(self.player.get_playtime() / 1000)
@@ -209,18 +241,24 @@ class MousaiGUI:
             else:
                 if event == sg.WINDOW_CLOSED:
                     break
+                elif event == "-VOLUME_SLIDER-":
+                    value = values["-VOLUME_SLIDER-"]
+                    self.handle_volume_change(value)
+                elif event == "+N_KEY_PRESS+" or event == "+M_KEY_PRESS+":
+                    step = 5 if event[1] == "M" else -5
 
+                    new_v = self.player.volume * 100 + step
+
+                    self.handle_volume_change(new_v)
                 elif event == "-PLAY_PAUSE_BTN-" or event == "+SPACE_KEY_PRESS+":
                     if self.player.current_song:
                         if self.player.playback_paused:
                             self.player.play()
                         else:
                             self.player.pause()
-
                 elif event == "-TABLE-+START_KEY_PRESS+":
                     value = values["-TABLE-"][0]
                     self.set_current_song(self.player.playlist[value])
-
                 elif event == "+R_KEY_PRESS+":
                     if self.player.current_song:
                         self.set_current_song(self.player.current_song)
