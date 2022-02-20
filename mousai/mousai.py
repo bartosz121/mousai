@@ -43,12 +43,18 @@ class MousaiGUI:
         self._default_art_cover = utils.get_default_art_cover()
         self.theme = theme
         self.player = AudioPlayer()
-        # add_songs.add_songs(self.player.playlist)
+        add_songs.add_songs(self.player.playlist)
         self.gui_playtime = 0.00
         self.layout = self.create_layout()
         self.window = sg.Window("Mousai", self.layout, resizable=False, finalize=True)
 
         # Keyboard shortcuts
+        # 'RETURN': Start selected song from playlist
+        # 'N': Decrease volume
+        # 'M': Increase volume
+        # 'SPACE': Pause/Resume current song
+        # 'R': Restart current song
+
         self.window["-TABLE-"].bind("<Return>", "+START_KEY_PRESS+")
         self.window.bind("n", "+N_KEY_PRESS+")
         self.window.bind("m", "+M_KEY_PRESS+")
@@ -239,47 +245,64 @@ class MousaiGUI:
             if event != "__TIMEOUT__":
                 print(f"{event=} {values=}")
 
+            # Song is playing
             if self.player.current_song and not self.player.playback_paused:
                 current_playtime = round(self.player.get_playtime() / 1000)
 
+                # Update play time and progress bar
                 self.window["-PLAY_TIME-"].update(
                     utils.playtime_to_str(current_playtime)
                 )
                 self.window["-PROG_BAR-"].update(
                     current_playtime, self.player.current_song.meta.playtime
                 )
+
+            # TABLE CLICKED Event has value in format ('.TABLE', '+CLICKED+', (row, col))
             if isinstance(event, tuple):
-                # TABLE CLICKED Event has value in format ('.TABLE', '+CLICKED+', (row,col))
+                # Item in table was clicked
                 if event[0] == "-TABLE-":
                     print(f"{event=} {values=}")
                     value = event[2][0]
                     if value is not None:  # can be None if user clicks on table headers
                         self.set_current_song(self.player.playlist[value])
             else:
-                if event == sg.WINDOW_CLOSED:
+                # Menu -> File -> Exit or window closed
+                if event == "Exit" or event == sg.WINDOW_CLOSED:
                     break
+
+                # Volume slider moved
                 elif event == "-VOLUME_SLIDER-":
                     value = values["-VOLUME_SLIDER-"]
                     self.handle_volume_change(value)
+
+                # Keyboard shortcut to change volume
                 elif event == "+N_KEY_PRESS+" or event == "+M_KEY_PRESS+":
                     step = 5 if event[1] == "M" else -5
-
                     new_v = self.player.volume * 100 + step
 
                     self.handle_volume_change(new_v)
+
+                # Play/Pause btn clicked or spacebar pressed
                 elif event == "-PLAY_PAUSE_BTN-" or event == "+SPACE_KEY_PRESS+":
                     if self.player.current_song:
+
+                        # Start playing if player was paused or pause if otherwise
                         if self.player.playback_paused:
                             self.player.play()
                         else:
                             self.player.pause()
+
+                # Return key pressed on table item
                 elif event == "-TABLE-+START_KEY_PRESS+":
                     value = values["-TABLE-"][0]
                     self.set_current_song(self.player.playlist[value])
+
+                # 'R' key pressed
                 elif event == "+R_KEY_PRESS+":
                     if self.player.current_song:
                         self.set_current_song(self.player.current_song)
 
+        # Cleanup before exit
         if self.player.is_playing:
             self.player.stop()
 
