@@ -180,7 +180,7 @@ class MousaiGUI:
             file_types=MousaiGUI.audio_file_types,
         )
 
-        if paths is None:
+        if paths is None or len(paths) < 1:
             return None
 
         paths_gen = (Path(path) for path in paths if path)
@@ -281,7 +281,7 @@ class MousaiGUI:
                     break
 
                 # Menu -> File -> Add song
-                elif event == "Add song":
+                elif event == "Add songs":
                     paths = self.get_audio_file_path()
 
                     if paths:
@@ -298,14 +298,17 @@ class MousaiGUI:
                             else:
                                 added_songs_count += 1
 
-                        sg.popup_ok(
-                            f"{added_songs_count} song{'s' if added_songs_count > 1 else ''} added to playlist",
-                            title="Success",
-                            non_blocking=True,
-                            keep_on_top=True,
-                        )
+                        if added_songs_count > 0:
+                            sg.popup_ok(
+                                f"{added_songs_count} song{'s' if added_songs_count > 1 else ''} added to playlist",
+                                title="Success",
+                                non_blocking=True,
+                                keep_on_top=True,
+                            )
 
-                        self.window["-TABLE-"].update(values=self.playlist_to_table())
+                            self.window["-TABLE-"].update(
+                                values=self.playlist_to_table()
+                            )
 
                 # BUTTONS/SLIDERS
 
