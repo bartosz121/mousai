@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-from typing import List
+from typing import Generator, List
 
 import PySimpleGUI as sg  # type: ignore
 
 import add_songs
 import utils
 from player.audio_player import AudioPlayer
-from player.playlist import PlaylistItem
+from player.playlist import SUPPORTED_AUDIO_FILES, PlaylistItem
 
 WINDOW_TIMEOUT = 10
 
@@ -21,13 +21,13 @@ class CustomTable(sg.Table):
 
 
 class MousaiGUI:
-    audio_file_types = (("Supported audio file", ".mp3 .ogg .wav"),)
+    audio_file_types = (("Supported audio file", " ".join(SUPPORTED_AUDIO_FILES)),)
 
     menu_layout = [
         [
             "File",
             [
-                "!Add song",
+                "Add songs",
                 "---",
                 "!Save playlist",
                 "!Load playlist",
@@ -171,13 +171,21 @@ class MousaiGUI:
 
         return layout
 
-    # def import_audio_file(self) -> None:
-    #     file = sg.popup_get_file(
-    #         "Please enter a file name",
-    #         multiple_files=True,
-    #         file_types=MousaiGUI.audio_file_types,
-    #     )
-    #     print(file)
+    def get_audio_file_path(self) -> None | Generator[Path, None, None]:
+        paths = sg.popup_get_file(
+            "Please enter audio file path",
+            multiple_files=True,
+            no_window=True,
+            keep_on_top=True,
+            file_types=MousaiGUI.audio_file_types,
+        )
+
+        if paths is None:
+            return None
+
+        paths_gen = (Path(path) for path in paths if path)
+
+        return paths_gen
 
     def playlist_to_table(self) -> List[List[str]]:
         """Creates list of lists which contain values for playlist table in [Title, Artist, Duration] format"""
@@ -266,21 +274,45 @@ class MousaiGUI:
                     if value is not None:  # can be None if user clicks on table headers
                         self.set_current_song(self.player.playlist[value])
             else:
+                # MENU EVENTS
+
                 # Menu -> File -> Exit or window closed
                 if event == "Exit" or event == sg.WINDOW_CLOSED:
                     break
+
+                # Menu -> File -> Add song
+                elif event == "Add song":
+                    paths = self.get_audio_file_path()
+
+                    if paths:
+                        added_songs_count = 0
+                        for song_path in paths:
+                            try:
+                                self.player.playlist.add(
+                                    PlaylistItem.from_file(song_path)
+                                )
+                            except ValueError as e:
+                                sg.popup_error(
+                                    "Error", e, non_blocking=True, keep_on_top=True
+                                )
+                            else:
+                                added_songs_count += 1
+
+                        sg.popup_ok(
+                            f"{added_songs_count} song{'s' if added_songs_count > 1 else ''} added to playlist",
+                            title="Success",
+                            non_blocking=True,
+                            keep_on_top=True,
+                        )
+
+                        self.window["-TABLE-"].update(values=self.playlist_to_table())
+
+                # BUTTONS/SLIDERS
 
                 # Volume slider moved
                 elif event == "-VOLUME_SLIDER-":
                     value = values["-VOLUME_SLIDER-"]
                     self.handle_volume_change(value)
-
-                # Keyboard shortcut to change volume
-                elif event == "+N_KEY_PRESS+" or event == "+M_KEY_PRESS+":
-                    step = 5 if event[1] == "M" else -5
-                    new_v = self.player.volume * 100 + step
-
-                    self.handle_volume_change(new_v)
 
                 # Play/Pause btn clicked or spacebar pressed
                 elif event == "-PLAY_PAUSE_BTN-" or event == "+SPACE_KEY_PRESS+":
@@ -291,6 +323,15 @@ class MousaiGUI:
                             self.player.play()
                         else:
                             self.player.pause()
+
+                # KEYBOARD SHORTCUTS
+
+                # Keyboard shortcut to change volume
+                elif event == "+N_KEY_PRESS+" or event == "+M_KEY_PRESS+":
+                    step = 5 if event[1] == "M" else -5
+                    new_v = self.player.volume * 100 + step
+
+                    self.handle_volume_change(new_v)
 
                 # Return key pressed on table item
                 elif event == "-TABLE-+START_KEY_PRESS+":
