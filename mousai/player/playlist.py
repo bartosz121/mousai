@@ -9,6 +9,9 @@ import eyed3  # type: ignore
 # TODO ANNOTATIONS
 
 
+SUPPORTED_AUDIO_FILES = (".mp3", ".ogg", ".wav")
+
+
 class AudioMetaData(NamedTuple):
     file_name: str
     playtime: int = 0
@@ -63,10 +66,13 @@ class PlaylistItem:
 
     @classmethod
     def from_file(cls, path: Path) -> "PlaylistItem":
-        try:
-            meta_data = AudioMetaData.from_file(path)
-        except FileNotFoundError as e:
-            raise e
+        if not path.exists():
+            raise ValueError("File does not exist")
+
+        if path.suffix not in SUPPORTED_AUDIO_FILES:
+            raise ValueError(f"{path.suffix!r} files are not supported")
+
+        meta_data = AudioMetaData.from_file(path)
 
         return cls(path, meta_data)
 
@@ -92,6 +98,9 @@ class Playlist:
 
     def __setitem__(self, key, value: PlaylistItem) -> None:
         self.songs[key] = value
+
+    def __len__(self):
+        return self.songs.__len__()
 
     def add(self, item: PlaylistItem) -> None:
         self.songs.append(item)
