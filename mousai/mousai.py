@@ -23,11 +23,27 @@ class CustomTable(sg.Table):
 class MousaiGUI:
     audio_file_types = (("Supported audio file", ".mp3 .ogg .wav"),)
 
+    menu_layout = [
+        [
+            "File",
+            [
+                "!Add song",
+                "---",
+                "!Save playlist",
+                "!Load playlist",
+                "---",
+                "&Exit",
+            ],
+        ],
+        ["Edit", ["!Settings"]],
+        ["Help", "!About"],
+    ]
+
     def __init__(self, theme: str = "DarkAmber") -> None:
         self._default_art_cover = utils.get_default_art_cover()
         self.theme = theme
         self.player = AudioPlayer()
-        add_songs.add_songs(self.player.playlist)
+        # add_songs.add_songs(self.player.playlist)
         self.gui_playtime = 0.00
         self.layout = self.create_layout()
         self.window = sg.Window("Mousai", self.layout, resizable=False, finalize=True)
@@ -107,6 +123,7 @@ class MousaiGUI:
         ]
 
         layout = [
+            [sg.Menu(self.menu_layout)],
             [
                 sg.Column(left_col, expand_y=True),
                 sg.Column(right_col, expand_y=True),
