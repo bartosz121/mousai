@@ -12,7 +12,7 @@ class AudioPlayer:
         mixer.init()
         self.playlist = Playlist()
         self.current_song: PlaylistItem | None = None
-        self.volume = 1.0
+        self.volume = 0.05
         self._queue = deque(maxlen=10)  # TODO annotate this
         self._history = deque()
         self.playback_paused = False
