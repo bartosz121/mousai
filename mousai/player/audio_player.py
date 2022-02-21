@@ -21,6 +21,13 @@ class AudioPlayer:
 
         mixer.music.set_volume(self.volume)
 
+    def init_queue(self) -> None:
+        """
+        This method is meant to be ran when you want to populate queue for first time.
+        """
+        for _ in range(self.QUEUE_MAX_LEN):
+            self.add_to_queue()
+
     def add_to_history(self, item: PlaylistItem) -> None:
         self._history.appendleft(item)
 
@@ -42,6 +49,14 @@ class AudioPlayer:
             self._queue.appendleft(item)
         else:
             self._queue.append(item)
+
+    def get_next_song(self) -> PlaylistItem:
+        next_song = self._queue.popleft()
+        self.add_to_queue()  # add new song to the end of the queue
+        return next_song
+
+    def get_history(self) -> str:
+        return NotImplemented
 
     def is_playing(self) -> bool:
         """Is there any audio currently playing"""
