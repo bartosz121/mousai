@@ -1,4 +1,5 @@
 import io
+import random
 import reprlib
 from datetime import datetime
 from pathlib import Path
@@ -108,5 +109,15 @@ class Playlist:
     def remove(self, item_index) -> None:
         del self.songs[item_index]
 
+    def get_random_item(self) -> PlaylistItem:
+        if len(self.songs) < 1:
+            raise PlayerError("No items in playlist.")
+
+        return random.choice(self.songs)
+
     def remove_duplicates(self, item) -> None:
         raise NotImplementedError
+
+
+class PlayerError(Exception):
+    pass
