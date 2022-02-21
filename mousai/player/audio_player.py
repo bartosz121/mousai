@@ -4,40 +4,44 @@ from collections import deque
 
 from pygame import mixer
 
-from .playlist import Playlist, PlaylistItem
+from .playlist import PlayerError, Playlist, PlaylistItem
 
 
 class AudioPlayer:
+    QUEUE_MAX_LEN = 10
+
     def __init__(self) -> None:
         mixer.init()
         self.playlist = Playlist()
         self.current_song: PlaylistItem | None = None
         self.volume = 0.05
-        self._queue = deque(maxlen=10)  # TODO annotate this
+        self._queue = deque(maxlen=self.QUEUE_MAX_LEN)
         self._history = deque()
         self.playback_paused = False
 
         mixer.music.set_volume(self.volume)
 
-    def add_to_history(self, item) -> None:  # TODO annotate item
+    def add_to_history(self, item: PlaylistItem) -> None:
         self._history.appendleft(item)
 
-    def add_to_queue(self, item: str | None = None) -> None:  # TODO annotate item
+    def add_to_queue(self, item: PlaylistItem = None, next: bool = False) -> None:
         """
         Adds item to queue.
 
-        If item is STR(TODO) its appended to the left - to be played right after current song;
+        If item is None pick random song from playlist.
 
-        else - get random song from playlist and append it to the right
+        If `next` is True, item is appended to the left - to be played right after current song;
         """
         if item is None:
-            # TODO grab random song from playlist
-            # item = self._get_random_song()
+            try:
+                item = self.playlist.get_random_item()
+            except PlayerError:
+                raise
+
+        if next:
+            self._queue.appendleft(item)
+        else:
             self._queue.append(item)
-            pass
-        # if item is not None (can only happen when user wants to play this song after current one)
-        # append to the start
-        self._queue.appendleft(item)
 
     def is_playing(self) -> bool:
         """Is there any audio currently playing"""
@@ -59,7 +63,7 @@ class AudioPlayer:
                 mixer.music.unpause()
             else:
                 mixer.music.stop()
-                mixer.music.load(self.current_song.path)  # TODO opitmization???
+                mixer.music.load(self.current_song.path)
                 mixer.music.play()
 
             self.playback_paused = False
