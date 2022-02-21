@@ -70,14 +70,21 @@ class MousaiGUI:
         return utils.resize_img(song_meta_art)
 
     def set_current_song(self, song: PlaylistItem) -> None:
+        if self.player.current_song is None:
+            # this runs when first song since launching the app is picked by user to be played
+            self.player.init_queue()
+
         self.player.stop()
         self.player.current_song = song
+        self.player.add_to_history(song)
+
         self.set_metadata_frame()
         self.set_timers()
+
         self.player.play()
-        self.player.set_volume(
-            self.player.volume
-        )  # Because when new music is loaded the volume is reset to full volume
+
+        # Because when new music is loaded the volume is set to full volume
+        self.player.set_volume(self.player.volume)
 
     def create_layout(self) -> List[List[sg.Pane]]:
         right_col = [
@@ -253,17 +260,26 @@ class MousaiGUI:
             if event != "__TIMEOUT__":
                 print(f"{event=} {values=}")
 
-            # Song is playing
+            # There is current song set and is not paused
             if self.player.current_song and not self.player.playback_paused:
-                current_playtime = round(self.player.get_playtime() / 1000)
+                current_playtime = self.player.get_playtime()
 
-                # Update play time and progress bar
-                self.window["-PLAY_TIME-"].update(
-                    utils.playtime_to_str(current_playtime)
-                )
-                self.window["-PROG_BAR-"].update(
-                    current_playtime, self.player.current_song.meta.playtime
-                )
+                # Song ended
+                if current_playtime == -1:
+                    # Get next song from queue and play it
+                    self.set_current_song(self.player.get_next_song())
+                # Song playing
+                else:
+                    current_playtime_in_seconds = round(current_playtime / 1000)
+
+                    # Update play time and progress bar
+                    self.window["-PLAY_TIME-"].update(
+                        utils.playtime_to_str(current_playtime_in_seconds)
+                    )
+                    self.window["-PROG_BAR-"].update(
+                        current_playtime_in_seconds,
+                        self.player.current_song.meta.playtime,
+                    )
 
             # TABLE CLICKED Event has value in format ('.TABLE', '+CLICKED+', (row, col))
             if isinstance(event, tuple):
