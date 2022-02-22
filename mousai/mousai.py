@@ -96,8 +96,9 @@ class MousaiGUI:
                 CustomTable(
                     values=self.playlist_to_table(),
                     headings=["Track", "Artist", "Duration"],
-                    max_col_width=18,
-                    auto_size_columns=True,
+                    col_widths=[19, 15, 7],
+                    max_col_width=15,
+                    auto_size_columns=False,
                     display_row_numbers=True,
                     justification="left",
                     expand_y=True,
