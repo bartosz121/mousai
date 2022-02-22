@@ -29,7 +29,18 @@ class AudioPlayer:
             self.add_to_queue()
 
     def add_to_history(self, item: PlaylistItem) -> None:
-        self._history.appendleft(item)
+        """
+        Adds item to `self._history`;
+        also checks if last item in history is equal to argument `item`
+        if yes - dont add it
+        """
+        try:
+            last = self._history[0]
+        except IndexError:
+            self._history.appendleft(item)
+        else:
+            if item != last:
+                self._history.appendleft(item)
 
     def add_to_queue(self, item: PlaylistItem = None, next: bool = False) -> None:
         """
