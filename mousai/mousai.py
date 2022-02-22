@@ -21,6 +21,9 @@ class CustomTable(sg.Table):
 
 
 class MousaiGUI:
+    PLAY_BTN_SYMBOL = "▶"
+    PAUSE_BTN_SYMBOL = "| |"
+
     audio_file_types = (("Supported audio file", " ".join(SUPPORTED_AUDIO_FILES)),)
 
     menu_layout = [
@@ -74,6 +77,7 @@ class MousaiGUI:
             # this runs when first song since launching the app is picked by user to be played
             self.player.init_queue()
 
+        self.window["-PLAY_PAUSE_BTN-"].update(self.PAUSE_BTN_SYMBOL)
         self.player.stop()
         self.player.current_song = song
         self.player.add_to_history(song)
@@ -105,7 +109,7 @@ class MousaiGUI:
         ]
         controls = [
             sg.Button("<<", disabled=True),
-            sg.Button("▶", focus=True, key="-PLAY_PAUSE_BTN-"),
+            sg.Button(self.PLAY_BTN_SYMBOL, focus=True, key="-PLAY_PAUSE_BTN-"),
             sg.Button(">>", disabled=True),
         ]
 
@@ -340,8 +344,12 @@ class MousaiGUI:
                         # Start playing if player was paused or pause if otherwise
                         if self.player.playback_paused:
                             self.player.play()
+                            self.window["-PLAY_PAUSE_BTN-"].update(
+                                self.PAUSE_BTN_SYMBOL
+                            )
                         else:
                             self.player.pause()
+                            self.window["-PLAY_PAUSE_BTN-"].update(self.PLAY_BTN_SYMBOL)
 
                 # KEYBOARD SHORTCUTS
 
