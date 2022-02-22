@@ -47,7 +47,6 @@ class MousaiGUI:
         self.theme = theme
         self.player = AudioPlayer()
         add_songs.add_songs(self.player.playlist)
-        self.gui_playtime = 0.00
         self.layout = self.create_layout()
         self.window = sg.Window("Mousai", self.layout, resizable=False, finalize=True)
 
@@ -369,6 +368,8 @@ class MousaiGUI:
                 # 'R' key pressed
                 elif event == "+R_KEY_PRESS+":
                     if self.player.current_song:
+                        if self.player.playback_paused:
+                            self.player.play()
                         self.set_current_song(self.player.current_song)
 
         # Cleanup before exit
