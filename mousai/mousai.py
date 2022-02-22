@@ -108,7 +108,7 @@ class MousaiGUI:
             ]
         ]
         controls = [
-            sg.Button("<<", disabled=True),
+            sg.Button("<<", key="-RESTART_SONG_BTN-"),
             sg.Button(self.PLAY_BTN_SYMBOL, focus=True, key="-PLAY_PAUSE_BTN-"),
             sg.Button(">>", key="-NEXT_SONG_BTN-"),
         ]
@@ -249,6 +249,12 @@ class MousaiGUI:
         self.window["-PLAY_TIME-"].update(start)
         self.window["-PLAY_DURATION-"].update(end)
 
+    def restart_current_song(self) -> None:
+        if self.player.current_song:
+            if self.player.playback_paused:
+                self.player.play()
+            self.set_current_song(self.player.current_song)
+
     def handle_volume_change(self, value: float) -> None:
         if value > 100:
             value = 100
@@ -350,7 +356,8 @@ class MousaiGUI:
                         else:
                             self.player.pause()
                             self.window["-PLAY_PAUSE_BTN-"].update(self.PLAY_BTN_SYMBOL)
-
+                elif event == "-RESTART_SONG_BTN-":
+                    self.restart_current_song()
                 # Next Song btn clicked
                 elif event == "-NEXT_SONG_BTN-":
                     self.set_current_song(self.player.get_next_song())
@@ -371,10 +378,7 @@ class MousaiGUI:
 
                 # 'R' key pressed
                 elif event == "+R_KEY_PRESS+":
-                    if self.player.current_song:
-                        if self.player.playback_paused:
-                            self.player.play()
-                        self.set_current_song(self.player.current_song)
+                    self.restart_current_song()
 
         # Cleanup before exit
         if self.player.is_playing:
