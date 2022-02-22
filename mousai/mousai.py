@@ -110,7 +110,7 @@ class MousaiGUI:
         controls = [
             sg.Button("<<", disabled=True),
             sg.Button(self.PLAY_BTN_SYMBOL, focus=True, key="-PLAY_PAUSE_BTN-"),
-            sg.Button(">>", disabled=True),
+            sg.Button(">>", key="-NEXT_SONG_BTN-"),
         ]
 
         left_col = [
@@ -350,6 +350,10 @@ class MousaiGUI:
                         else:
                             self.player.pause()
                             self.window["-PLAY_PAUSE_BTN-"].update(self.PLAY_BTN_SYMBOL)
+
+                # Next Song btn clicked
+                elif event == "-NEXT_SONG_BTN-":
+                    self.set_current_song(self.player.get_next_song())
 
                 # KEYBOARD SHORTCUTS
 
