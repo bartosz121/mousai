@@ -75,11 +75,12 @@ class MousaiGUI:
         if self.player.current_song is None:
             # this runs when first song since launching the app is picked by user to be played
             self.player.init_queue()
+        else:
+            self.player.add_to_history(self.player.current_song)
 
         self.window["-PLAY_PAUSE_BTN-"].update(self.PAUSE_BTN_SYMBOL)
         self.player.stop()
         self.player.current_song = song
-        self.player.add_to_history(song)
 
         self.set_metadata_frame()
         self.set_timers()
