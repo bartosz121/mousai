@@ -32,6 +32,8 @@ class MousaiGUI:
             [
                 "Add songs",
                 "---",
+                "Show queue",
+                "---",
                 "!Save playlist",
                 "!Load playlist",
                 "---",
@@ -336,6 +338,15 @@ class MousaiGUI:
                             self.window["-TABLE-"].update(
                                 values=self.playlist_to_table()
                             )
+
+                # Menu -> File -> Show queue
+                elif event == "Show queue":
+                    queue_items = self.player.get_queue_items()
+                    msg = "\n".join(
+                        f"{i}. {str(song)}"
+                        for i, song in enumerate(queue_items, start=1)
+                    )
+                    sg.popup_ok(msg, title="Queue", non_blocking=True)
 
                 # BUTTONS/SLIDERS
 
