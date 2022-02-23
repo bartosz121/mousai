@@ -60,7 +60,7 @@ class PlaylistItem:
         return f"PlaylistItem.from_file({self.path})"
 
     def __str__(self) -> str:
-        return f"PlaylistItem_{self.meta.title}_by_{self.meta.artist}"
+        return f"{self.meta.title} - {self.meta.artist}"
 
     def _get_metadata(self, song: str) -> str:
         raise NotImplementedError
