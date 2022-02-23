@@ -361,6 +361,8 @@ class MousaiGUI:
                     self.restart_current_song()
                 # Next Song btn clicked
                 elif event == "-NEXT_SONG_BTN-":
+                    if self.player.playback_paused:
+                        self.player.play()
                     self.set_current_song(self.player.get_next_song())
 
                 # KEYBOARD SHORTCUTS
