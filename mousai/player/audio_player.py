@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
+from typing import Generator
 
 from pygame import mixer
 
@@ -15,7 +16,7 @@ class AudioPlayer:
         self.playlist = Playlist()
         self.current_song: PlaylistItem | None = None
         self.volume = 0.05
-        self._queue = deque(maxlen=self.QUEUE_MAX_LEN)
+        self._queue = deque(maxlen=self.QUEUE_MAX_LEN)  # TODO type hint to deque
         self._history = deque()
         self.playback_paused = False
 
@@ -60,6 +61,9 @@ class AudioPlayer:
             self._queue.appendleft(item)
         else:
             self._queue.append(item)
+
+    def get_queue_items(self) -> Generator[PlaylistItem, None, None]:
+        return (song for song in self._queue)
 
     def get_next_song(self) -> PlaylistItem:
         next_song = self._queue.popleft()
