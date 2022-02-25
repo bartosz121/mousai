@@ -10,6 +10,7 @@ from .playlist import PlayerError, Playlist, PlaylistItem
 
 class AudioPlayer:
     QUEUE_MAX_LEN = 10
+    HISTORY_MAX_LEN = 10
 
     def __init__(self) -> None:
         mixer.init()
@@ -17,7 +18,7 @@ class AudioPlayer:
         self.current_song: PlaylistItem | None = None
         self.volume = 0.05
         self._queue = deque(maxlen=self.QUEUE_MAX_LEN)  # TODO type hint to deque
-        self._history = deque()
+        self._history = deque(maxlen=self.HISTORY_MAX_LEN)
         self.playback_paused = False
 
         mixer.music.set_volume(self.volume)
@@ -62,16 +63,26 @@ class AudioPlayer:
         else:
             self._queue.append(item)
 
-    def get_queue_items(self) -> Generator[PlaylistItem, None, None]:
-        return (song for song in self._queue)
+    def get_playlistitems_gen(
+        self, *, source: str
+    ) -> Generator[PlaylistItem, None, None]:
+        """
+        Returns generator with items from `_queue` or `_history` attributes.
+        Raises `ValueError` if not allowed source is passed
+        """
+        if source == "queue":
+            src = iter(self._queue)
+        elif source == "history":
+            src = iter(self._history)
+        else:
+            raise ValueError(f"Cant fetch items from {source!r}. See docstring")
+
+        return (song for song in src)
 
     def get_next_song(self) -> PlaylistItem:
         next_song = self._queue.popleft()
         self.add_to_queue()  # add new song to the end of the queue
         return next_song
-
-    def get_history(self) -> str:
-        return NotImplemented
 
     def is_playing(self) -> bool:
         """Is there any audio currently playing"""
