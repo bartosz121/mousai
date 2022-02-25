@@ -33,6 +33,7 @@ class MousaiGUI:
                 "Add songs",
                 "---",
                 "Show queue",
+                "Show history",
                 "---",
                 "!Save playlist",
                 "!Load playlist",
@@ -304,7 +305,6 @@ class MousaiGUI:
                         self.set_current_song(self.player.playlist[value])
             else:
                 # MENU EVENTS
-
                 # Menu -> File -> Exit or window closed
                 if event == "Exit" or event == sg.WINDOW_CLOSED:
                     break
@@ -339,17 +339,16 @@ class MousaiGUI:
                                 values=self.playlist_to_table()
                             )
 
-                # Menu -> File -> Show queue
-                elif event == "Show queue":
-                    queue_items = self.player.get_queue_items()
+                # Menu -> File -> Show queue/Show history
+                elif event == "Show queue" or event == "Show history":
+                    src: str = event.split()[-1]
+                    items = self.player.get_playlistitems_gen(source=src)
                     msg = "\n".join(
-                        f"{i}. {str(song)}"
-                        for i, song in enumerate(queue_items, start=1)
+                        f"{i}. {str(song)}" for i, song in enumerate(items, start=1)
                     )
-                    sg.popup_ok(msg, title="Queue", non_blocking=True)
+                    sg.popup_ok(msg, title=src.capitalize(), non_blocking=True)
 
                 # BUTTONS/SLIDERS
-
                 # Volume slider moved
                 elif event == "-VOLUME_SLIDER-":
                     value = values["-VOLUME_SLIDER-"]
@@ -370,6 +369,7 @@ class MousaiGUI:
                             self.window["-PLAY_PAUSE_BTN-"].update(self.PLAY_BTN_SYMBOL)
                 elif event == "-RESTART_SONG_BTN-":
                     self.restart_current_song()
+
                 # Next Song btn clicked
                 elif event == "-NEXT_SONG_BTN-":
                     if self.player.playback_paused:
@@ -377,7 +377,6 @@ class MousaiGUI:
                     self.set_current_song(self.player.get_next_song())
 
                 # KEYBOARD SHORTCUTS
-
                 # Keyboard shortcut to change volume
                 elif event == "+N_KEY_PRESS+" or event == "+M_KEY_PRESS+":
                     step = 5 if event[1] == "M" else -5
