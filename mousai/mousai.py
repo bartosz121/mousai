@@ -31,6 +31,7 @@ class MousaiGUI:
             "File",
             [
                 "Add songs",
+                "Add songs from directory",
                 "---",
                 "Show queue",
                 "Show history",
@@ -186,7 +187,11 @@ class MousaiGUI:
 
         return layout
 
-    def get_audio_file_path(self) -> None | Generator[Path, None, None]:
+    def get_audio_file_paths(self) -> None | Generator[Path, None, None]:
+        """
+        Opens file dialog where user can choose multiple files;
+        after submitting, returns `None` if no files were choosen, else generator with paths
+        """
         paths = sg.popup_get_file(
             "Please enter audio file path",
             multiple_files=True,
@@ -201,6 +206,19 @@ class MousaiGUI:
         paths_gen = (Path(path) for path in paths if path)
 
         return paths_gen
+
+    def get_audio_files_from_directory(self) -> None | Generator[Path, None, None]:
+        """
+        Opens `FolderPopup` to let user choose directory;
+        Returns `None` if popup is cancelled, else generator with paths
+        """
+        dir_path = sg.popup_get_folder("Choose directory", no_window=True)
+
+        if dir_path is None:
+            return None
+
+        dir_path = Path(dir_path)
+        return dir_path.iterdir()
 
     def playlist_to_table(self) -> List[List[str]]:
         """Creates list of lists which contain values for playlist table in [Title, Artist, Duration] format"""
@@ -309,22 +327,27 @@ class MousaiGUI:
                 if event == "Exit" or event == sg.WINDOW_CLOSED:
                     break
 
-                # Menu -> File -> Add song
-                elif event == "Add songs":
-                    paths = self.get_audio_file_path()
+                # Menu -> File -> Add song/Add songs from directory
+                elif event == "Add songs" or event == "Add songs from directory":
+                    if event.split()[-1] == "directory":
+                        paths = self.get_audio_files_from_directory()
+                    else:
+                        paths = self.get_audio_file_paths()
 
                     if paths:
                         added_songs_count = 0
                         for song_path in paths:
                             try:
-                                self.player.playlist.add(
-                                    PlaylistItem.from_file(song_path)
-                                )
+                                playlist_item = PlaylistItem.from_file(song_path)
                             except ValueError as e:
                                 sg.popup_error(
-                                    "Error", e, non_blocking=True, keep_on_top=True
+                                    "Error",
+                                    f"Cant import {song_path}\n{e}",
+                                    non_blocking=True,
+                                    keep_on_top=True,
                                 )
                             else:
+                                self.player.playlist.add(playlist_item)
                                 added_songs_count += 1
 
                         if added_songs_count > 0:
