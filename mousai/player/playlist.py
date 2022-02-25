@@ -60,6 +60,8 @@ class PlaylistItem:
         return f"PlaylistItem.from_file({self.path})"
 
     def __str__(self) -> str:
+        if self.meta.title is None or self.meta.artist is None:
+            return self.meta.file_name
         return f"{self.meta.title} - {self.meta.artist}"
 
     def _get_metadata(self, song: str) -> str:
