@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import Generator
+from typing import Deque, Generator
 
 from pygame import mixer
 
@@ -17,8 +17,8 @@ class AudioPlayer:
         self.playlist = Playlist()
         self.current_song: PlaylistItem | None = None
         self.volume = 0.05
-        self._queue = deque(maxlen=self.QUEUE_MAX_LEN)  # TODO type hint to deque
-        self._history = deque(maxlen=self.HISTORY_MAX_LEN)
+        self._queue: Deque[PlaylistItem] = deque(maxlen=self.QUEUE_MAX_LEN)
+        self._history: Deque[PlaylistItem] = deque(maxlen=self.HISTORY_MAX_LEN)
         self.playback_paused = False
 
         mixer.music.set_volume(self.volume)
