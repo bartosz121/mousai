@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from collections import deque
 from typing import Deque, Generator
 
@@ -7,13 +8,14 @@ from pygame import mixer
 
 from .playlist import PlayerError, Playlist, PlaylistItem
 
+_called_from_test = False
+
 
 class AudioPlayer:
     QUEUE_MAX_LEN = 10
     HISTORY_MAX_LEN = 10
 
     def __init__(self) -> None:
-        mixer.init()
         self.playlist = Playlist()
         self.current_song: PlaylistItem | None = None
         self.volume = 0.05
@@ -21,7 +23,9 @@ class AudioPlayer:
         self._history: Deque[PlaylistItem] = deque(maxlen=self.HISTORY_MAX_LEN)
         self.playback_paused = False
 
-        mixer.music.set_volume(self.volume)
+        if not "pytest" in sys.modules:
+            mixer.init()
+            mixer.music.set_volume(self.volume)
 
     def init_queue(self) -> None:
         """
