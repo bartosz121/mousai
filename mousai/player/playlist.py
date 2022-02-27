@@ -15,7 +15,7 @@ SUPPORTED_AUDIO_FILES = (".mp3", ".ogg", ".wav")
 
 class AudioMetaData(NamedTuple):
     file_name: str
-    playtime: int = 0
+    playtime: float = 0
     artist: Optional[str] = None
     album: Optional[str] = None
     title: Optional[str] = None
