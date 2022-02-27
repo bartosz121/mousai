@@ -4,9 +4,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Generator, List
 
-import PySimpleGUI as sg  # type: ignore
+import PySimpleGUI as sg
 
-import add_songs
 import utils
 from player.audio_player import AudioPlayer
 from player.playlist import SUPPORTED_AUDIO_FILES, PlaylistItem
@@ -50,7 +49,6 @@ class MousaiGUI:
         self._default_art_cover = utils.get_default_art_cover()
         self.theme = theme
         self.player = AudioPlayer()
-        add_songs.add_songs(self.player.playlist)
         self.layout = self.create_layout()
         self.window = sg.Window("Mousai", self.layout, resizable=False, finalize=True)
 
