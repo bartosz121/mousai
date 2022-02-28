@@ -5,7 +5,7 @@ description = ""
 authors = ["bartosz121 <bmagiera121@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 simpleaudio = "^1.0.4"
 eyed3 = "^0.9.6"
 PySimpleGUI = "^4.56.0"
