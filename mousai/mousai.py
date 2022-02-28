@@ -80,6 +80,10 @@ class MousaiGUI:
         else:
             self.player.add_to_history(self.player.current_song)
 
+        # Fixes bug where pygame mixer would not play next track if playback was paused
+        if self.player.playback_paused:
+            self.player.play()
+
         self.window["-PLAY_PAUSE_BTN-"].update(self.PAUSE_BTN_SYMBOL)
         self.player.stop()
         self.player.current_song = song
@@ -393,8 +397,6 @@ class MousaiGUI:
 
                 # Next Song btn clicked
                 elif event == "-NEXT_SONG_BTN-":
-                    if self.player.playback_paused:
-                        self.player.play()
                     self.set_current_song(self.player.get_next_song())
 
                 # KEYBOARD SHORTCUTS
