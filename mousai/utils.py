@@ -11,7 +11,7 @@ def get_default_art_cover() -> bytes:
     return p.read_bytes()
 
 
-def playtime_to_str(value: int):
+def playtime_to_str(value: int | float):
     """Returns string in `M:S` format from playtime in seconds"""
     m, s = divmod(round(value), 60)
     return f"{m}:{s:02}"
