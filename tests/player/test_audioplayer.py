@@ -3,54 +3,36 @@ from mousai.player.audio_player import AudioPlayer
 from mousai.player.playlist import PlaylistItem
 
 
-@pytest.fixture
-def audioplayer(dummy_playlist_with_items) -> AudioPlayer:
-    ap = AudioPlayer()
-    ap.playlist = dummy_playlist_with_items
-    ap.init_queue()
-
-    return ap
-
-
 def test_add_to_history(audioplayer: AudioPlayer, test_file: PlaylistItem):
-    ap = audioplayer
-    item = test_file
-
-    ap.add_to_history(item)
-    assert ap._history[-1] is item
+    audioplayer.add_to_history(test_file)
+    assert audioplayer._history[-1] is test_file
 
     # Do not add same item to history if it was played two or more times in a row
-    ap.add_to_history(item)
-    assert len(ap._history) == 1
+    audioplayer.add_to_history(test_file)
+    assert len(audioplayer._history) == 1
 
 
 def test_add_to_queue(audioplayer: AudioPlayer, test_file: PlaylistItem):
-    ap = audioplayer
-    item = test_file
+    audioplayer.add_to_queue(test_file)
+    assert audioplayer._queue[-1] is test_file
 
-    ap.add_to_queue(item)
-    assert ap._queue[-1] is item
-
-    ap.add_to_queue(item, next=True)
-    assert ap._queue[0] is item
+    audioplayer.add_to_queue(test_file, next=True)
+    assert audioplayer._queue[0] is test_file
 
 
 def test_get_playlistitems_gen(audioplayer: AudioPlayer, test_file: PlaylistItem):
-    ap = audioplayer
-    queue_gen = ap.get_playlistitems_gen(source="queue")
+    queue_gen = audioplayer.get_playlistitems_gen(source="queue")
 
-    assert all([a == b for a, b in zip(ap._queue, queue_gen)])
+    assert all([a == b for a, b in zip(audioplayer._queue, queue_gen)])
 
     for _ in range(10):
-        ap.add_to_history(test_file)
+        audioplayer.add_to_history(test_file)
 
-    history_gen = ap.get_playlistitems_gen(source="history")
-    assert all([a == b for a, b in zip(ap._history, history_gen)])
+    history_gen = audioplayer.get_playlistitems_gen(source="history")
+    assert all([a == b for a, b in zip(audioplayer._history, history_gen)])
 
 
 def test_get_next_song(audioplayer: AudioPlayer):
-    ap = audioplayer
+    last_item = audioplayer._queue[0]
 
-    last_item = ap._queue[0]
-
-    assert last_item is ap.get_next_song()
+    assert last_item is audioplayer.get_next_song()

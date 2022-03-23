@@ -11,7 +11,7 @@ def test_str(test_file: PlaylistItem):
     assert str(test_file) == "15 Seconds of Silence - Anar Software LLC"
 
 
-def test_str_meta_title_artist_is_none(test_file: PlaylistItem):
+def test_str_meta_title_artist_is_none():
     dummy_meta_data = AudioMetaData("test.mp3")
     item = PlaylistItem(__file__, meta_data=dummy_meta_data)
 
